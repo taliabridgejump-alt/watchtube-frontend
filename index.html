@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anon Posting Site</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Anon Posts</h1>
+
+    <div id="usernameBox">
+        <input id="usernameInput" placeholder="Enter username">
+        <button onclick="setUsername()">Save</button>
+    </div>
+</header>
+
+<main>
+
+    <section id="createPost">
+        <textarea id="postText" placeholder="Write something..."></textarea>
+
+        <input type="file" id="videoUpload" accept="video/*">
+
+        <button onclick="createPost()">Post</button>
+    </section>
+
+    <section id="feed"></section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
