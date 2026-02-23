@@ -1,3 +1,4 @@
+// Backend API
 const API = "https://watchtube-backend.onrender.com/posts";
 
 // Create user ID if not exists
@@ -5,8 +6,16 @@ if (!localStorage.getItem("userID")) {
     localStorage.setItem("userID", crypto.randomUUID());
 }
 
-let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+let posts = [];
 
+// Load posts from backend
+async function loadPosts() {
+    const res = await fetch(API);
+    posts = await res.json();
+    renderPosts();
+}
+
+// Save username locally (not on backend)
 function setUsername() {
     const name = document.getElementById("usernameInput").value.trim();
     if (name.length < 1) return alert("Enter a username");
@@ -15,7 +24,8 @@ function setUsername() {
     alert("Username updated");
 }
 
-function createPost() {
+// Create a new post (online)
+async function createPost() {
     const text = document.getElementById("postText").value.trim();
     const video = document.getElementById("videoUpload").files[0];
 
@@ -36,52 +46,62 @@ function createPost() {
         comments: []
     };
 
-    posts.unshift(post);
-    localStorage.setItem("posts", JSON.stringify(posts));
+    await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(post)
+    });
 
     document.getElementById("postText").value = "";
     document.getElementById("videoUpload").value = "";
 
-    renderPosts();
+    loadPosts();
 }
 
-function toggleLike(postID) {
+// Toggle like (online)
+async function toggleLike(postID) {
     const userID = localStorage.getItem("userID");
+    const post = posts.find(p => p.id === postID);
 
-    posts = posts.map(p => {
-        if (p.id === postID) {
-            if (p.likes.includes(userID)) {
-                p.likes = p.likes.filter(id => id !== userID);
-            } else {
-                p.likes.push(userID);
-            }
-        }
-        return p;
+    let updatedLikes = post.likes.includes(userID)
+        ? post.likes.filter(id => id !== userID)
+        : [...post.likes, userID];
+
+    await fetch(`${API}/${postID}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ likes: updatedLikes })
     });
 
-    localStorage.setItem("posts", JSON.stringify(posts));
-    renderPosts();
+    loadPosts();
 }
 
-function addComment(postID) {
+// Add comment (online)
+async function addComment(postID) {
     const input = document.getElementById("comment-" + postID);
     const text = input.value.trim();
     if (!text) return;
 
-    posts = posts.map(p => {
-        if (p.id === postID) {
-            p.comments.push({
-                username: localStorage.getItem("username") || "Anon",
-                text
-            });
+    const post = posts.find(p => p.id === postID);
+
+    const updatedComments = [
+        ...post.comments,
+        {
+            username: localStorage.getItem("username") || "Anon",
+            text
         }
-        return p;
+    ];
+
+    await fetch(`${API}/${postID}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comments: updatedComments })
     });
 
-    localStorage.setItem("posts", JSON.stringify(posts));
-    renderPosts();
+    loadPosts();
 }
 
+// Render posts
 function renderPosts() {
     const feed = document.getElementById("feed");
     feed.innerHTML = "";
@@ -114,4 +134,5 @@ function renderPosts() {
     });
 }
 
-renderPosts();
+// Start the app
+loadPosts();
