@@ -3,7 +3,7 @@ if (!localStorage.getItem("userID")) {
     localStorage.setItem("userID", crypto.randomUUID());
 }
 
-let posts = JSON.parse(localStorage.getItem("posts") || "[]");
+let const API = const API = "https://watchtube-backend.onrender.com/posts";
 
 function setUsername() {
     const name = document.getElementById("usernameInput").value.trim();
@@ -76,6 +76,8 @@ function addComment(postID) {
         return p;
     });
 
+    const API = "https://watchtube-backend.onrender.com";
+
     localStorage.setItem("posts", JSON.stringify(posts));
     renderPosts();
 }
@@ -111,5 +113,6 @@ function renderPosts() {
         feed.appendChild(div);
     });
 }
+
 
 renderPosts();
